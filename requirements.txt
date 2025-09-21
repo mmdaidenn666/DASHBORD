@@ -7,3 +7,4 @@ eventlet
 python-dotenv
 werkzeug
 fastapi
+qrcode
