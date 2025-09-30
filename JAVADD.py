@@ -8,6 +8,7 @@ HTML_TEMPLATE = '''
 <html lang="fa">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سایت رسمی دبیرستان جوادالائمه</title>
     <style>
         @font-face {
@@ -46,7 +47,7 @@ HTML_TEMPLATE = '''
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 200px;
+            width: 250px;
             height: auto;
             opacity: 0;
             z-index: 20;
@@ -54,10 +55,10 @@ HTML_TEMPLATE = '''
         }
 
         .logo.fade-in {
-            animation: fadeInMove 2s forwards;
+            animation: fadeInScale 2s forwards;
         }
 
-        @keyframes fadeInMove {
+        @keyframes fadeInScale {
             from { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
             to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
@@ -68,11 +69,12 @@ HTML_TEMPLATE = '''
             left: 50%;
             transform: translateX(-50%);
             color: #2e026d;
-            font-size: 1.8em;
+            font-size: 1.5em;
             font-weight: bold;
             opacity: 0;
             z-index: 20;
             white-space: nowrap;
+            text-align: center;
         }
 
         .typing {
@@ -95,7 +97,7 @@ HTML_TEMPLATE = '''
 
         .spinner {
             position: absolute;
-            top: 68%;
+            top: 70%;
             left: 50%;
             transform: translateX(-50%);
             width: 50px;
@@ -120,7 +122,7 @@ HTML_TEMPLATE = '''
         }
 
         .header {
-            font-size: 1.8em;
+            font-size: 1.5em;
             color: #2e026d;
             margin-bottom: 30px;
             text-shadow: 0 0 10px rgba(0, 255, 247, 0.7);
@@ -129,15 +131,28 @@ HTML_TEMPLATE = '''
         .buttons-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 30px;
-            width: 80%;
-            max-width: 800px;
-            margin: 0 auto;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .buttons-container {
+                grid-template-columns: 1fr;
+                width: 95%;
+            }
+            .btn {
+                width: 100%;
+            }
+            .header {
+                font-size: 1.2em;
+            }
+            .welcome-text {
+                font-size: 1.2em;
+            }
         }
 
         .btn {
-            width: 250px;
-            height: 250px;
+            width: 200px;
+            height: 200px;
             border-radius: 20px;
             display: flex;
             flex-direction: column;
@@ -146,7 +161,7 @@ HTML_TEMPLATE = '''
             cursor: pointer;
             box-shadow: 0 0 20px rgba(0, 255, 247, 0.5);
             transition: all 0.3s ease;
-            font-size: 1.5em;
+            font-size: 1.2em;
             font-weight: bold;
             color: white;
             text-decoration: none;
@@ -165,24 +180,25 @@ HTML_TEMPLATE = '''
         .btn4 { background: linear-gradient(45deg, #39ff14, #00fff7); }
 
         .subtitle {
-            font-size: 1em;
+            font-size: 0.9em;
             margin-top: 10px;
             font-weight: normal;
         }
 
         .top-logo {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 60px;
+            top: 15px;
+            right: 15px;
+            width: 50px;
             height: auto;
             z-index: 100;
             opacity: 0;
-            transition: opacity 1s ease;
+            transition: opacity 1s ease, transform 1.5s ease;
         }
 
         .top-logo.visible {
             opacity: 1;
+            transform: scale(1);
         }
     </style>
 </head>
@@ -190,11 +206,12 @@ HTML_TEMPLATE = '''
 
     <div class="border-light"></div>
 
-    <img id="logo" class="logo" src="https://raw.githubusercontent.com/your-username/your-repo/main/logo.jpg" alt="لوگوی مدرسه">
+    <!-- لوگو از گیت‌هاب -->
+    <img id="logo" class="logo" src="https://raw.githubusercontent.com/mmdaidenn666/DASHBORD/main/logo.jpg" alt="لوگوی مدرسه">
     <div id="welcome" class="welcome-text"></div>
     <div id="spinner" class="spinner"></div>
 
-    <img id="topLogo" class="top-logo" src="https://raw.githubusercontent.com/your-username/your-repo/main/logo.jpg" alt="لوگو بالای صفحه">
+    <img id="topLogo" class="top-logo" src="https://raw.githubusercontent.com/mmdaidenn666/DASHBORD/main/logo.jpg" alt="لوگو بالای صفحه">
 
     <div id="mainContent" class="main-content">
         <div class="header">
@@ -251,6 +268,7 @@ HTML_TEMPLATE = '''
                 document.querySelector('.border-light').style.opacity = 0;
                 logo.style.transition = 'opacity 1s ease, transform 2s ease';
                 logo.style.transform = 'translateY(-45vh) translateX(-50%) scale(0.3)';
+                
                 welcome.style.opacity = 0;
                 spinner.style.opacity = 0;
 
@@ -272,5 +290,5 @@ def home():
     return render_template_string(HTML_TEMPLATE)
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  # دریافت پورت از متغیر محیطی
-    app.run(host='0.0.0.0', port=port, debug=False)  # اجرای سرور روی 0.0.0.0 و پورت تعیین‌شده
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
