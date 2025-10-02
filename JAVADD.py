@@ -1,10 +1,9 @@
-from flask import Flask, render_template_string, request, redirect, url_for, session
 import os
+from flask import Flask, render_template_string, request, redirect, url_for, session
 
 app = Flask(__name__)
 app.secret_key = 'dabirestan_secret_key'
 
-# حالت اولیه پروفایل مدیر
 DEFAULT_PROFILE = {
     'name': 'نام',
     'family': 'نام خانوادگی',
@@ -335,7 +334,7 @@ HOME_HTML = f'''
 </html>
 '''
 
-LOGIN_HTML = '''
+LOGIN_HTML = f'''
 <!DOCTYPE html>
 <html lang="fa">
 <head>
@@ -347,9 +346,9 @@ LOGIN_HTML = '''
 <body>
     <div class="login-form">
         <h2>ورود مدیران</h2>
-        {% if error %}
-        <div class="error">{{ error }}</div>
-        {% endif %}
+        {{% if error %}}
+        <div class="error">{{{{ error }}}}</div>
+        {{% endif %}}
         <form method="POST">
             <input type="text" name="name" placeholder="نام" required>
             <input type="text" name="family" placeholder="نام خانوادگی" required>
@@ -364,11 +363,27 @@ LOGIN_HTML = '''
             <button type="submit">ورود</button>
         </form>
     </div>
+
+    <div class="footer-typed" id="footer-typed-login"></div>
+
+    <script>
+        const text = "سازنده : محمدرضا محمدی - دانش آموز دبیرستان جوادالائمه - رشته ریاضی";
+        const element = document.getElementById("footer-typed-login");
+        let i = 0;
+        function typeWriter() {{
+            if (i < text.length) {{
+                element.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(typeWriter, 100);
+            }}
+        }}
+        window.onload = typeWriter;
+    </script>
 </body>
 </html>
 '''
 
-PORTAL_HTML = '''
+PORTAL_HTML = f'''
 <!DOCTYPE html>
 <html lang="fa">
 <head>
@@ -415,17 +430,17 @@ PORTAL_HTML = '''
             <div class="profile-section">
                 <div class="editable-field">
                     <span>نام:</span>
-                    <div id="name-display">{{ profile.name }}</div>
+                    <div id="name-display">{{{{ profile.name }}}}</div>
                     <button class="edit-btn" onclick="startEdit('name', 'name-display')">✏️</button>
                 </div>
                 <div class="editable-field">
                     <span>نام خانوادگی:</span>
-                    <div id="family-display">{{ profile.family }}</div>
+                    <div id="family-display">{{{{ profile.family }}}}</div>
                     <button class="edit-btn" onclick="startEdit('family', 'family-display')">✏️</button>
                 </div>
                 <div class="editable-field">
                     <span>مرتبه:</span>
-                    <div id="rank-display">{{ profile.rank }}</div>
+                    <div id="rank-display">{{{{ profile.rank }}}}</div>
                     <button class="edit-btn" onclick="startEdit('rank', 'rank-display')">✏️</button>
                 </div>
                 <div class="editable-field">
@@ -436,6 +451,8 @@ PORTAL_HTML = '''
             </div>
         </div>
     </div>
+
+    <div class="footer-typed" id="footer-typed-portal"></div>
 
     <script>
         let editingField = null;
@@ -479,13 +496,13 @@ PORTAL_HTML = '''
                     </select>
                 `;
             }} else {{
-                display.innerHTML = `<input type="text" id="edit-input" value="${current}">`;
+                display.innerHTML = `<input type="text" id="edit-input" value="${{current}}">`;
             }}
 
             display.innerHTML += `
                 <div class="edit-actions">
-                    <button class="confirm-btn" onclick="saveEdit('${field}', '${displayId}')">✓ تأیید</button>
-                    <button class="cancel-btn" onclick="cancelEdit('${displayId}', '${current}')">✗ انصراف</button>
+                    <button class="confirm-btn" onclick="saveEdit('${{field}}', '${{displayId}}')">✓ تأیید</button>
+                    <button class="cancel-btn" onclick="cancelEdit('${{displayId}}', '${{current}}')">✗ انصراف</button>
                 </div>
             `;
         }}
@@ -497,10 +514,10 @@ PORTAL_HTML = '''
             fetch('/update_profile', {{
                 method: 'POST',
                 headers: {{ 'Content-Type': 'application/x-www-form-urlencoded' }},
-                body: `field=${field}&value=${encodeURIComponent(value)}`
+                body: `field=${{field}}&value=${{encodeURIComponent(value)}}`
             }}).then(() => {{
                 document.getElementById(displayId).innerHTML = value;
-                document.getElementById(displayId).innerHTML += `<button class="edit-btn" onclick="startEdit('${field}', '${displayId}')">✏️</button>`;
+                document.getElementById(displayId).innerHTML += `<button class="edit-btn" onclick="startEdit('${{field}}', '${{displayId}}')">✏️</button>`;
             }});
         }}
 
@@ -508,11 +525,22 @@ PORTAL_HTML = '''
             document.getElementById(displayId).innerHTML = original;
             document.getElementById(displayId).innerHTML += '<button class="edit-btn" onclick="startEdit()">✏️</button>';
         }}
+
+        const text = "سازنده : محمدرضا محمدی - دانش آموز دبیرستان جوادالائمه - رشته ریاضی";
+        const element = document.getElementById("footer-typed-portal");
+        let i = 0;
+        function typeWriter() {{
+            if (i < text.length) {{
+                element.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(typeWriter, 100);
+            }}
+        }}
+        window.onload = typeWriter;
     </script>
 </body>
 </html>
 '''
 
 if __name__ == '__main__':
-    import os
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
