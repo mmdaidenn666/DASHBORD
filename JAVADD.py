@@ -18,11 +18,12 @@ def home():
 @app.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
     error = None
+    name = request.form.get('name', '')
+    family = request.form.get('family', '')
+    rank = request.form.get('rank', 'انتخاب کنید')
+
     if request.method == 'POST':
-        name = request.form['name']
-        family = request.form['family']
-        rank = request.form['rank']
-        password = request.form['password']
+        password = request.form.get('password')
 
         if not name or not family or rank == 'انتخاب کنید' or password != 'dabirestan012345':
             error = 'اطلاعات وارد شده نادرست است. لطفاً دوباره تلاش کنید.'
@@ -36,7 +37,7 @@ def admin_login():
             }
             return redirect(url_for('admin_portal'))
 
-    return render_template_string(LOGIN_HTML, error=error)
+    return render_template_string(LOGIN_HTML, error=error, name=name, family=family, rank=rank)
 
 @app.route('/admin_portal')
 def admin_portal():
@@ -44,6 +45,13 @@ def admin_portal():
         return redirect(url_for('admin_login'))
     profile = session.get('profile', DEFAULT_PROFILE)
     return render_template_string(PORTAL_HTML, profile=profile)
+
+@app.route('/profile')
+def profile_page():
+    if not session.get('logged_in'):
+        return redirect(url_for('admin_login'))
+    profile = session.get('profile', DEFAULT_PROFILE)
+    return render_template_string(PROFILE_HTML, profile=profile)
 
 @app.route('/update_profile', methods=['POST'])
 def update_profile():
@@ -209,11 +217,15 @@ body {
 .sidebar ul li:hover {
     background: rgba(0,255,247,0.1);
 }
-.profile-section {
-    padding: 20px;
-    background: rgba(0,0,0,0.3);
+
+/* Profile Page */
+.profile-page {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 30px;
+    background: rgba(0,0,0,0.4);
     border-radius: 10px;
-    margin-top: 20px;
+    box-shadow: 0 0 20px #00fff7;
 }
 .editable-field {
     margin: 10px 0;
@@ -293,6 +305,7 @@ body {
     overflow: hidden;
     border-right: 2px solid white;
     padding-right: 2px;
+    z-index: 100;
 }
 """
 
@@ -318,7 +331,7 @@ HOME_HTML = f'''
     <div class="footer-typed" id="footer-typed"></div>
 
     <script>
-        const text = "سازنده : محمدرضا محمدی - دانش آموز دبیرستان جوادالائمه - رشته ریاضی";
+        const text = "سازنده: محمدرضا محمدی (رشته ریاضی)";
         const element = document.getElementById("footer-typed");
         let i = 0;
         function typeWriter() {{
@@ -350,14 +363,13 @@ LOGIN_HTML = f'''
         <div class="error">{{{{ error }}}}</div>
         {{% endif %}}
         <form method="POST">
-            <input type="text" name="name" placeholder="نام" required>
-            <input type="text" name="family" placeholder="نام خانوادگی" required>
+            <input type="text" name="name" placeholder="نام" value="{{{{ name or '' }}}}" required>
+            <input type="text" name="family" placeholder="نام خانوادگی" value="{{{{ family or '' }}}}" required>
             <select name="rank" required>
-                <option value="انتخاب کنید" disabled selected>مرتبه</option>
-                <option value="مدیر">مدیر</option>
-                <option value="ناظم">ناظم</option>
-                <option value="معاون">معاون</option>
-                <option value="مشاور">مشاور</option>
+                <option value="انتخاب کنید" {{ 'selected' if rank == 'انتخاب کنید' else '' }}>مرتبه</option>
+                <option value="مدیر" {{ 'selected' if rank == 'مدیر' else '' }}>مدیر</option>
+                <option value="ناظم" {{ 'selected' if rank == 'ناظم' else '' }}>ناظم</option>
+                <option value="معاون" {{ 'selected' if rank == 'معاون' else '' }}>معاون</option>
             </select>
             <input type="password" name="password" placeholder="رمز" required>
             <button type="submit">ورود</button>
@@ -367,7 +379,7 @@ LOGIN_HTML = f'''
     <div class="footer-typed" id="footer-typed-login"></div>
 
     <script>
-        const text = "سازنده : محمدرضا محمدی - دانش آموز دبیرستان جوادالائمه - رشته ریاضی";
+        const text = "سازنده: محمدرضا محمدی (رشته ریاضی)";
         const element = document.getElementById("footer-typed-login");
         let i = 0;
         function typeWriter() {{
@@ -397,7 +409,7 @@ PORTAL_HTML = f'''
 
     <div class="sidebar" id="sidebar">
         <ul>
-            <li onclick="showProfile()">پروفایل</li>
+            <li onclick="window.location.href='/profile'">پروفایل</li>
             <li onclick="showNotifications()">اعلانات</li>
             <li onclick="logout()">خروج</li>
         </ul>
@@ -425,44 +437,11 @@ PORTAL_HTML = f'''
         </div>
     </div>
 
-    <div class="modal" id="profile-modal">
-        <div class="modal-content">
-            <div class="profile-section">
-                <div class="editable-field">
-                    <span>نام:</span>
-                    <div id="name-display">{{{{ profile.name }}}}</div>
-                    <button class="edit-btn" onclick="startEdit('name', 'name-display')">✏️</button>
-                </div>
-                <div class="editable-field">
-                    <span>نام خانوادگی:</span>
-                    <div id="family-display">{{{{ profile.family }}}}</div>
-                    <button class="edit-btn" onclick="startEdit('family', 'family-display')">✏️</button>
-                </div>
-                <div class="editable-field">
-                    <span>مرتبه:</span>
-                    <div id="rank-display">{{{{ profile.rank }}}}</div>
-                    <button class="edit-btn" onclick="startEdit('rank', 'rank-display')">✏️</button>
-                </div>
-                <div class="editable-field">
-                    <span>رمز:</span>
-                    <div id="password-display">••••••••</div>
-                    <button class="edit-btn" disabled>✏️</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="footer-typed" id="footer-typed-portal"></div>
 
     <script>
-        let editingField = null;
-
         function toggleSidebar() {{
             document.getElementById('sidebar').classList.toggle('active');
-        }}
-
-        function showProfile() {{
-            document.getElementById('profile-modal').style.display = 'flex';
         }}
 
         function showNotifications() {{
@@ -481,6 +460,63 @@ PORTAL_HTML = f'''
             document.getElementById('modal').style.display = 'none';
         }}
 
+        const text = "سازنده: محمدرضا محمدی (رشته ریاضی)";
+        const element = document.getElementById("footer-typed-portal");
+        let i = 0;
+        function typeWriter() {{
+            if (i < text.length) {{
+                element.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(typeWriter, 100);
+            }}
+        }}
+        window.onload = typeWriter;
+    </script>
+</body>
+</html>
+'''
+
+PROFILE_HTML = f'''
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پروفایل مدیر</title>
+    <style>{CSS}</style>
+</head>
+<body>
+    <div class="profile-page">
+        <h2>پروفایل</h2>
+        <div class="editable-field">
+            <span>نام:</span>
+            <div id="name-display">{{{{ profile.name }}}}</div>
+            <button class="edit-btn" onclick="startEdit('name', 'name-display')">✏️</button>
+        </div>
+        <div class="editable-field">
+            <span>نام خانوادگی:</span>
+            <div id="family-display">{{{{ profile.family }}}}</div>
+            <button class="edit-btn" onclick="startEdit('family', 'family-display')">✏️</button>
+        </div>
+        <div class="editable-field">
+            <span>مرتبه:</span>
+            <div id="rank-display">{{{{ profile.rank }}}}</div>
+            <button class="edit-btn" onclick="startEdit('rank', 'rank-display')">✏️</button>
+        </div>
+        <div class="editable-field">
+            <span>رمز:</span>
+            <div id="password-display">••••••••</div>
+            <button class="edit-btn" disabled>✏️</button>
+        </div>
+        <br>
+        <button onclick="window.location.href='/admin_portal'" style="background:#ff007f; border:none; padding:10px; border-radius:5px; color:white; cursor:pointer;">بازگشت به درگاه</button>
+    </div>
+
+    <div class="footer-typed" id="footer-typed-profile"></div>
+
+    <script>
+        let editingField = null;
+
         function startEdit(field, displayId) {{
             const display = document.getElementById(displayId);
             const current = display.textContent;
@@ -492,7 +528,6 @@ PORTAL_HTML = f'''
                         <option value="مدیر" {{'selected' if profile.rank == 'مدیر' else ''}}>مدیر</option>
                         <option value="ناظم" {{'selected' if profile.rank == 'ناظم' else ''}}>ناظم</option>
                         <option value="معاون" {{'selected' if profile.rank == 'معاون' else ''}}>معاون</option>
-                        <option value="مشاور" {{'selected' if profile.rank == 'مشاور' else ''}}>مشاور</option>
                     </select>
                 `;
             }} else {{
@@ -526,8 +561,8 @@ PORTAL_HTML = f'''
             document.getElementById(displayId).innerHTML += '<button class="edit-btn" onclick="startEdit()">✏️</button>';
         }}
 
-        const text = "سازنده : محمدرضا محمدی - دانش آموز دبیرستان جوادالائمه - رشته ریاضی";
-        const element = document.getElementById("footer-typed-portal");
+        const text = "سازنده: محمدرضا محمدی (رشته ریاضی)";
+        const element = document.getElementById("footer-typed-profile");
         let i = 0;
         function typeWriter() {{
             if (i < text.length) {{
